@@ -12,11 +12,13 @@ list($options, $unrecognized) = cli_get_params([
     'help' => false,
     'force' => false,
     'limit' => 0, // Optional limit on number of questions to process
+    'course' => 0, // limit which course's questions will be deleted
     'offset' => 0,
 ], [
     'h' => 'help',
     'f' => 'force',
     'l' => 'limit',
+    'c' => 'course',
     'o' => 'offset'
 ]);
 
@@ -33,6 +35,7 @@ Options:
 -h, --help             Print this help.
 -f, --force            Skip confirmation (use with caution).
 -l, --limit=INT        Limit the number of questions to process (0 = no limit).
+-c, --course=INT       Limit to this course to search for marked questions
 
 Example:
 \$ php moodle-duplicate-manager-cli.php
@@ -47,6 +50,7 @@ Example:
 $force = (bool)$options['force'];
 $limit = (int)$options['limit'];
 if (!$limit) $limit = 'all';
+$courseid = (int)$options['course'];
 $offset = (int)$options['offset'];
 
 // Function to safely check if a question can be deleted
@@ -118,6 +122,14 @@ function is_question_safe_to_delete($questionid) {
 
 cli_writeln("Processing duplicate questions globally across all courses");
 
+$coursecondition = '';
+if ($courseid) {
+    $coursecondition = ' AND c.id = :courseid';
+}
+$params = [];
+if ($courseid) {
+    $params['courseid'] = $courseid;
+}
 // Find renamed duplicates
 try {
     $sql = "SELECT 
@@ -143,11 +155,11 @@ try {
             WHERE
                 (q.name ~ ' \(duplicate \d{1,}\)$'
                 AND q.stamp ~ '^dup\d\.')
+                $coursecondition
             ORDER BY
                 c.id, q.name
             LIMIT {$limit} OFFSET {$offset}";
-
-    $renamedQuestions = $DB->get_records_sql($sql);
+    $renamedQuestions = $DB->get_records_sql($sql, $params);
 } catch (Exception $e) {
     cli_error('Error fetching renamed questions: ' . $e->getMessage());
 }

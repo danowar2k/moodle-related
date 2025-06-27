@@ -12,6 +12,7 @@
 - Added safety checks to marking script to use in the table output
 - Added the question type to queried attributes to use in the table output
 - Added parameter to limit duplicate identification to questions in the same question category
+- Added parameter to delete script that allows one to limit the deletion to a certain course id
 
 ### Changed
 
