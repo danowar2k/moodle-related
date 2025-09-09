@@ -55,36 +55,37 @@ $multianswers = $DB->get_records('question_multianswer');
 
 foreach ($multianswers as $multianswer) {
     $maId = $multianswer->id;
+    $maQuestionId = $multianswer->question;
     if (!isset($multianswer->sequence) || is_null($multianswer->sequence) || !$multianswer->sequence) {
         echo "3a) MA record without a sequence found: ".$maId."<br/>";
-        $questionsWithProblems[] = $multianswer->question;
+        $questionsWithProblems[] = $maQuestionId;
         continue;
     }
     $maSequence = $multianswer->sequence;
     $maSequenceQuestionIds = explode(',', $maSequence);
     if (!$maSequenceQuestionIds || preg_match("/^,+$/", $maSequence)) {
-        $questionsWithProblems[] = $multianswer->question;
-        echo "3b) Bad sequence for MA (id: $maId) found ($maSequence)<br/>";
+        $questionsWithProblems[] = $maQuestionId;
+        echo "3b) Bad sequence for MA (id: $maId, question: $maQuestionId) found ($maSequence)<br/>";
         continue;
     }
     $sequenceCount = count($maSequenceQuestionIds);
 
-    $subQuestionSql = "SELECT * FROM {question} q WHERE q.id IN($maSequence)";
+    $subQuestionSql = "SELECT q.* FROM {question} q WHERE q.id IN($maSequence)";
     $subquestions = $DB->get_records_sql($subQuestionSql);
     $subQuestionCount = count($subquestions);
     if ($sequenceCount !== $subQuestionCount) {
-        $questionsWithProblems[] = $multianswer->question;
-        echo "3c) MA with id: ".$maId."<br/>";
+        $questionsWithProblems[] = $maQuestionId;
+        echo "3c) MA with id: $maId, question: $maQuestionId<br/>";
         echo "3c) Has sequence of ".$sequenceCount." subquestions (".$maSequence.")<br/>";
         echo "3c) But found only ".$subQuestionCount." of them in database<br/>";
     }
     foreach ($subquestions as $subquestion) {
         $subquestionId = $subquestion->id;
         $subquestionParent = $subquestion->parent;
-        if ($subquestionParent !== $maId) {
-            $questionsWithProblems[] = $multianswer->question;
+        if ($subquestionParent !== $maQuestionId) {
+            $questionsWithProblems[] = $maQuestionId;
             $subquestionsWithProblems[] = $subquestionId;
-            echo "3d) Subquestion ".$subquestionId." is in sequence of MA with ID ".$maId." but has the wrong parent ".$subquestionParent."<br/>";
+            echo "3d) Subquestion $subquestionId is in sequence of MA with ID $maId but has the wrong parent $subquestionParent (correct: $maQuestionId)<br/>";
         }
     }
 }
@@ -115,9 +116,14 @@ if ($questionsWithProblems) {
 
     if ($nrQuestionsWithProblems > $nrResults) {
         echo "Warning! There are problematic questions not directly in a course.<br/>";
-        echo "Questions not in a course: ".implode(",", $missingQuestions)."<br/>";
+        echo "Question IDs not in a course: ".implode(",", $missingQuestions)."<br/>";
     }
     foreach ($questionsAndCourses as $questionAndCourse) {
-        echo "Problematic question ".$questionAndCourse->questionid." is in course ".$questionAndCourse->courseid."<br/>";
+        $params = [
+            'id' => $questionAndCourse->questionid,
+            'courseid' => $questionAndCourse->courseid
+        ];
+        $url = new moodle_url('/question/bank/previewquestion/preview.php', $params);
+        echo "<a target='_blank' href='".$url->out()."'>Link to problematic question $questionAndCourse->questionid</a><br/>";
     }
 }
