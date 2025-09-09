@@ -8,11 +8,11 @@ echo "Checking qtype_multianswer database consistency...<br/>";
 echo "<br/>";
 echo "1) Does every multianswer record have a matching question record?<br/>";
 
-$nrQuestionRecords = $DB->count_records_sql("SELECT count(*) FROM m_question q WHERE q.qtype = 'multianswer'");
-echo 'Nr of "multianswer" question records: '. $nrQuestionRecords. '<br/>';
+$nrQuestionRecords = $DB->count_records_sql("SELECT count(*) FROM {question} q WHERE q.qtype = 'multianswer'");
+echo '1) Nr of "multianswer" question records: '. $nrQuestionRecords. '<br/>';
 
 $nrMultianswerRecords = $DB->count_records('question_multianswer');
-echo 'Nr of question_multianswer records: '. $nrMultianswerRecords. '<br/>';
+echo '1) Nr of question_multianswer records: '. $nrMultianswerRecords. '<br/>';
 
 $multianswersMissingQuestionsSql =
     "SELECT qma.* FROM {question_multianswer} qma
@@ -20,7 +20,7 @@ $multianswersMissingQuestionsSql =
         WHERE q.id IS NULL";
 $qmaMissingQuestions = $DB->get_records_sql($multianswersMissingQuestionsSql);
 foreach ($qmaMissingQuestions as $qmaMissingQuestion) {
-    echo "Multianswer record with missing question: ".$qmaMissingQuestion->id."<br/>";
+    echo "1) Multianswer record with missing question: ".$qmaMissingQuestion->id."<br/>";
 }
 
 echo "<br/>";
@@ -29,7 +29,7 @@ echo "2) Multianswer questions should probably not have a parent. Checking...<br
 $noParentSql = "SELECT * FROM {question} q WHERE q.qtype = 'multianswer' AND q.parent <> 0";
 $maQuestionsWithParent = $DB->get_records_sql($noParentSql);
 if (!$maQuestionsWithParent) {
-    echo "No MA questions with a parent<br/>";
+    echo "2) OK. No MA questions that have a parent but should not<br/>";
 } else {
     foreach ($maQuestionsWithParent as $maQuestionWithParent) {
         echo "Multianswer question with a parent: " . $maQuestionWithParent->id . "<br/>";
@@ -42,12 +42,14 @@ echo "3a) Every multianswer needs a sequence<br/>";
 echo "3b) Every multianswer sequence needs to be comma-separated numbers<br/>";
 echo "3c) Every id in a multianswer sequence needs a corresponding question record (subquestion)<br/>";
 echo "3d) Every subquestion record needs to have the correct multianswer question as parent<br/>";
+echo "<br/>";
 $multianswers = $DB->get_records('question_multianswer');
 
 foreach ($multianswers as $multianswer) {
     $maId = $multianswer->id;
     if (!isset($multianswer->sequence) || is_null($multianswer->sequence) || !$multianswer->sequence) {
         echo "3a) MA record without a sequence found: ".$maId."<br/>";
+        continue;
     }
     $maSequence = $multianswer->sequence;
     $maSequenceQuestionIds = explode(',', $maSequence);
@@ -57,7 +59,7 @@ foreach ($multianswers as $multianswer) {
     }
     $sequenceCount = count($maSequenceQuestionIds);
 
-    $subQuestionSql = "SELECT * FROM m_question q WHERE q.id IN($multianswer->sequence)";
+    $subQuestionSql = "SELECT * FROM {question} q WHERE q.id IN($multianswer->sequence)";
     $subquestions = $DB->get_records_sql($subQuestionSql);
     $subQuestionCount = count($subquestions);
     if ($sequenceCount !== $subQuestionCount) {
