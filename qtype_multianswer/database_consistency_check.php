@@ -4,6 +4,8 @@ require_once(__DIR__.'/../config.php');
 
 global $DB;
 
+require_admin();
+
 echo "Checking qtype_multianswer database consistency...<br/>";
 echo "<br/>";
 echo "1) Does every multianswer record have a matching question record?<br/>";
