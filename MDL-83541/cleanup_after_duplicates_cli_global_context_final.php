@@ -120,11 +120,14 @@ function is_question_safe_to_delete($questionid) {
     return ['safe' => true, 'message' => "Question is safe to delete"];
 }
 
-cli_writeln("Processing duplicate questions globally across all courses");
+cli_writeln("Processing duplicate questions...");
 
 $coursecondition = '';
 if ($courseid) {
+    cli_writeln("...in course $courseid");
     $coursecondition = ' AND c.id = :courseid';
+} else {
+    cli_writeln("...globally across all courses");
 }
 $params = [];
 if ($courseid) {
