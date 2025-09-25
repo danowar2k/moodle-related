@@ -59,7 +59,7 @@ Options:
 -x, --contextid=INT         Process a specific context ID.
 -c, --courseid=INT          Process a specific course ID.
 -g, --categoryid=INT        Process a specific course category ID.
--o, --originalidentifier=STRING What is used to determine the original question (Values: ".implode(',', $validPriorities).")
+-o, --originalidentifier=STRING What is used to determine the original question (Values: ".implode(',', $validPriorities).") (default: id)
 -a, --all                   Process all contexts in the system.
 -f, --force                 Skip confirmation (use with caution).
 -d, --dryrun                Show what would be updated without making changes.
