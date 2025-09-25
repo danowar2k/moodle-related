@@ -157,7 +157,7 @@ try {
                 {course} c ON (ctx.contextlevel = 50 AND ctx.instanceid = c.id)
             WHERE
                 (q.name ~ ' \(duplicate \d{1,}\)$'
-                AND q.stamp ~ '^dup\d\.')
+                AND q.stamp ~ '^dup\d{1,}\.')
                 $coursecondition
             ORDER BY
                 c.id, q.name
