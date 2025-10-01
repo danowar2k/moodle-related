@@ -6,6 +6,8 @@ require_once(__DIR__ . '/../config.php');
 global $CFG, $DB;
 require_once($CFG->libdir . '/clilib.php');
 require_once($CFG->libdir . '/adminlib.php');
+ini_set('display_errors', 1);
+ini_set('memory_limit', '2048M');
 
 // CLI options
 list($options, $unrecognized) = cli_get_params([
