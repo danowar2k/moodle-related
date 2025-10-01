@@ -213,6 +213,10 @@ cli_writeln("- Found across " . count($questionsByCourse) . " courses/contexts")
 
 // If no safe questions, exit
 if (empty($safeQuestions)) {
+// Use this when debugging
+//    foreach ($unsafeQuestions as $unsafeQuestion) {
+//        cli_writeln("Question ID: ".$unsafeQuestion->id.", Message: ".$unsafeQuestion->safety_message);
+//    }
     cli_writeln("\nNo questions are safe to delete. Exiting.");
     exit(0);
 }
