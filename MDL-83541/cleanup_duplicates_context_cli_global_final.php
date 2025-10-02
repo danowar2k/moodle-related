@@ -394,9 +394,23 @@ function groupDuplicateQuestions(array $allQuestions, bool $contextAware, bool $
             }
         }
         if ($fakeDuplicates) {
-            $info['questions'] = array_diff($info['questions'], $fakeDuplicates);
-            $info['questions_with_parents'] = array_diff($info['questions_with_parents'], $fakeDuplicates);
-            $info['question_ids'] = array_diff($info['question_ids'], $fakeDuplicateIds);
+            $newInfoQuestions = [];
+            foreach ($info['questions'] as $infoQuestion) {
+                if (!in_array($infoQuestion->question_id, $fakeDuplicateIds)) {
+                    $newInfoQuestions[] = $infoQuestion;
+                }
+            }
+            $info['questions'] = $newInfoQuestions;
+
+            $newInfoQuestionsWithParents = [];
+            foreach ($info['questions_with_parents'] as $infoQuestionWithParent) {
+                if (!in_array($infoQuestionWithParent->question_id, $fakeDuplicateIds)) {
+                    $newInfoQuestionsWithParents[] = $infoQuestionWithParent;
+                }
+            }
+            $info['questions_with_parents'] = $newInfoQuestionsWithParents;
+
+            $info['question_ids'] = array_values(array_diff($info['question_ids'], $fakeDuplicateIds));
         }
         if (count($info['question_ids']) == 1) {
             $removedStamps[] = $key;
