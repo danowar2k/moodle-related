@@ -332,6 +332,7 @@ function getAllQuestions($contextId, $courseId, $categoryId) {
                 {context} ctx ON qc.contextid = ctx.id
             WHERE 
                 {$contextFilter}
+            AND q.qtype <> 'random'
             ORDER BY
                 q.stamp, q.id
             ";
